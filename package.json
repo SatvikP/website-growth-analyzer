@@ -5,9 +5,10 @@
   "main": "server/server.js",
   "scripts": {
     "dev": "cd server && npm run dev",
-    "build": "cd client && npm install && npm run build",
+    "build": "npm run install-all && cd client && npm run build",
     "start": "cd server && npm start",
-    "install-all": "cd server && npm install && cd ../client && npm install"
+    "install-all": "cd server && npm install && cd ../client && npm install",
+    "postinstall": "npm run install-all"
   },
   "keywords": ["website", "growth", "analysis", "ai", "firecrawl", "anthropic"],
   "author": "Your Name",
