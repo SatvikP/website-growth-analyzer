@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- SEO Meta Tags -->
+    <title>AI-Powered Website Growth Analysis - Free Growth Insights</title>
+    <meta name="description" content="Get instant, professional feedback on your website's growth potential. No signup required - just enter your URL and get AI-powered insights in 60 seconds." />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="AI-Powered Website Growth Analysis" />
+    <meta property="og:description" content="Get instant, professional feedback on your website's growth potential. Free AI analysis in 60 seconds." />
+    <meta property="og:type" content="website" />
+    <!-- TODO: Update with your Railway domain when deployed -->
+    <meta property="og:url" content="https://your-app-name.railway.app" />
+    
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="AI-Powered Website Growth Analysis" />
+    <meta name="twitter:description" content="Get instant, professional feedback on your website's growth potential. Free AI analysis in 60 seconds." />
+    
+    <!-- Favicon (you can add your own later) -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
+    <!-- Preload important fonts for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Prevent flash of unstyled content -->
+    <style>
+      body {
+        font-family: 'Futura', 'Futura-Medium', 'Trebuchet MS', Arial, sans-serif;
+        font-style: italic;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ff4757 100%);
+        min-height: 100vh;
+      }
+      
+      /* Loading spinner for initial page load */
+      .initial-loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 18px;
+        font-family: 'Futura', 'Futura-Medium', 'Trebuchet MS', Arial, sans-serif;
+        font-style: italic;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Fallback content while React loads -->
+      <div class="initial-loading">
+        Loading Growth Analyzer...
+      </div>
+    </div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
