@@ -64,26 +64,46 @@ app.get('/api/health', (req, res) => {
   res.json(healthData);
 });
 
-// Debug root endpoint
-app.get('/', (req, res) => {
-  console.log('🔍 Root endpoint called at:', new Date().toISOString());
-  res.json({
-    message: 'Website Growth Analyzer API is running',
-    timestamp: new Date().toISOString(),
-    endpoints: {
-      health: '/api/health',
-      analyze: '/api/analyze',
-      test: '/api/analyze/test'
-    }
-  });
-});
-
 // Serve static files from React build (for production)
-app.use(express.static(path.join(__dirname, '../client/dist')));
+const clientBuildPath = path.join(__dirname, '../client/dist');
+console.log('🔍 Looking for client build at:', clientBuildPath);
+
+// Check if build directory exists
+const fs = require('fs');
+if (fs.existsSync(clientBuildPath)) {
+  console.log('✅ Client build directory found');
+  app.use(express.static(clientBuildPath));
+} else {
+  console.log('❌ Client build directory NOT found at:', clientBuildPath);
+  // Fallback: serve a simple message if no build files
+  app.get('/', (req, res) => {
+    res.json({
+      message: 'Website Growth Analyzer API is running',
+      error: 'Frontend build files not found',
+      buildPath: clientBuildPath,
+      timestamp: new Date().toISOString()
+    });
+  });
+}
 
 // Catch-all handler: send back React's index.html file for any non-api routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  const indexPath = path.join(__dirname, '../client/dist/index.html');
+  console.log('🔍 Catch-all route hit for:', req.path);
+  console.log('🔍 Looking for index.html at:', indexPath);
+  
+  if (fs.existsSync(indexPath)) {
+    console.log('✅ Serving index.html');
+    res.sendFile(indexPath);
+  } else {
+    console.log('❌ index.html not found');
+    res.status(404).json({
+      error: 'Frontend not built',
+      message: 'React build files are missing',
+      path: req.path,
+      indexPath: indexPath
+    });
+  }
 });
 
 // Global error handler
