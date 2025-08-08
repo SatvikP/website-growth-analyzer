@@ -49,10 +49,32 @@ app.use('/api/analyze', require('./routes/analyze'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ 
+  console.log('🔍 Health check endpoint called at:', new Date().toISOString());
+  console.log('🔍 Request headers:', req.headers);
+  
+  const healthData = { 
     status: 'healthy', 
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    port: PORT,
+    uptime: process.uptime()
+  };
+  
+  console.log('✅ Sending health check response:', healthData);
+  res.json(healthData);
+});
+
+// Debug root endpoint
+app.get('/', (req, res) => {
+  console.log('🔍 Root endpoint called at:', new Date().toISOString());
+  res.json({
+    message: 'Website Growth Analyzer API is running',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/api/health',
+      analyze: '/api/analyze',
+      test: '/api/analyze/test'
+    }
   });
 });
 
