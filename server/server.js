@@ -46,6 +46,7 @@ app.use('/api/', limiter);
 
 // API Routes
 app.use('/api/analyze', require('./routes/analyze'));
+app.use('/api/admin', require('./routes/admin')); // NEW: Admin routes for lead management
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -57,7 +58,8 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     port: PORT,
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    database: 'PostgreSQL enabled' // NEW: Indicate database is available
   };
   
   console.log('✅ Sending health check response:', healthData);
@@ -81,7 +83,8 @@ if (fs.existsSync(clientBuildPath)) {
       message: 'Website Growth Analyzer API is running',
       error: 'Frontend build files not found',
       buildPath: clientBuildPath,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      features: ['AI Analysis', 'Lead Tracking', 'Admin Dashboard'] // NEW: List features
     });
   });
 }
@@ -129,6 +132,7 @@ app.use('/api/*', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Health check: http://0.0.0.0:${PORT}/api/health`);
+  console.log(`🎯 Admin dashboard: http://0.0.0.0:${PORT}/api/admin/leads?token=YOUR_TOKEN`); // NEW: Admin access info
   console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
   
   // Verify environment variables in development
@@ -140,6 +144,19 @@ app.listen(PORT, '0.0.0.0', () => {
       console.warn('⚠️  Missing environment variables:', missingVars.join(', '));
     } else {
       console.log('✅ All required environment variables are set');
+    }
+    
+    // NEW: Database connection info
+    if (process.env.DATABASE_URL) {
+      console.log('✅ DATABASE_URL is configured');
+    } else {
+      console.warn('⚠️  DATABASE_URL not found - lead tracking disabled');
+    }
+    
+    if (process.env.ADMIN_TOKEN) {
+      console.log('✅ ADMIN_TOKEN is configured');
+    } else {
+      console.warn('⚠️  ADMIN_TOKEN not set - using default (change in production!)');
     }
   }
 });

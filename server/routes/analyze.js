@@ -1,6 +1,7 @@
 const express = require('express');
 const firecrawlService = require('../services/firecrawl');
 const anthropicService = require('../services/anthropic');
+const databaseService = require('../services/database'); // NEW: Database service
 
 const router = express.Router();
 
@@ -55,14 +56,36 @@ router.post('/', async (req, res) => {
 
     console.log(`✅ Analysis complete - Score: ${analysisResult.score}/100`);
 
-    // Step 3: Return structured response
+    // Step 3: Save to database as potential lead (NEW)
+    try {
+      const leadData = {
+        url: url,
+        analysis: analysisResult,
+        metadata: crawlData.metadata,
+        ip: req.ip || req.connection?.remoteAddress || 'unknown',
+        userAgent: req.get('User-Agent') || 'unknown',
+        referrer: req.get('Referer') || null
+      };
+
+      const savedLead = await databaseService.saveWebsiteSubmission(leadData);
+      
+      if (savedLead) {
+        console.log(`🎯 Lead captured: ${savedLead.domain} (Score: ${analysisResult.score})`);
+      }
+    } catch (dbError) {
+      // Don't fail the analysis if database save fails
+      console.error('⚠️  Database save failed (analysis continues):', dbError.message);
+    }
+
+    // Step 4: Return structured response
     res.json({
       success: true,
       url: url,
       timestamp: new Date().toISOString(),
       analysis: {
         score: analysisResult.score,
-        feedback: analysisResult.feedback,
+        feedback: analysisResult.feedback || analysisResult.summary,
+        summary: analysisResult.summary,
         categories: analysisResult.categories || [],
         recommendations: analysisResult.recommendations || []
       },
