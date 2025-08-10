@@ -22,6 +22,7 @@ class DatabaseService {
     try {
       console.log('🗃️  Initializing database...');
       
+      // Fixed SQL with proper PostgreSQL syntax
       const createTableQuery = `
         CREATE TABLE IF NOT EXISTS website_submissions (
           id SERIAL PRIMARY KEY,
@@ -39,24 +40,27 @@ class DatabaseService {
           description TEXT,
           content_length INTEGER,
           
-          -- Lead tracking data
-          ip_address INET,
+          -- Lead tracking data (using VARCHAR for IP instead of INET for compatibility)
+          ip_address VARCHAR(45),
           user_agent TEXT,
           referrer VARCHAR(500),
           
           -- Timestamps
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          analyzed_at TIMESTAMP,
-          
-          -- Prevent spam: one analysis per URL per day
-          UNIQUE(url, DATE(created_at))
+          analyzed_at TIMESTAMP
         );
 
-        -- Create indexes for performance
+        -- Create unique index to prevent spam (one analysis per URL per day)
+        -- Using a functional index instead of inline constraint
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_submissions_url_date 
+        ON website_submissions(url, DATE(created_at));
+
+        -- Create other indexes for performance
         CREATE INDEX IF NOT EXISTS idx_submissions_domain ON website_submissions(domain);
         CREATE INDEX IF NOT EXISTS idx_submissions_score ON website_submissions(growth_score);
         CREATE INDEX IF NOT EXISTS idx_submissions_created ON website_submissions(created_at);
         CREATE INDEX IF NOT EXISTS idx_submissions_url ON website_submissions(url);
+        CREATE INDEX IF NOT EXISTS idx_submissions_analyzed ON website_submissions(analyzed_at);
       `;
 
       await this.pool.query(createTableQuery);
@@ -64,7 +68,13 @@ class DatabaseService {
       
     } catch (error) {
       console.error('❌ Database initialization error:', error);
-      // Don't crash the app if database fails
+      // Don't crash the app if database fails - log the specific error
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        position: error.position,
+        hint: error.hint
+      });
     }
   }
 
@@ -118,6 +128,11 @@ class DatabaseService {
       
     } catch (error) {
       console.error('❌ Failed to save submission:', error);
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        constraint: error.constraint
+      });
       // Don't crash analysis if database save fails
       return null;
     }
@@ -186,12 +201,45 @@ class DatabaseService {
    */
   async testConnection() {
     try {
-      await this.pool.query('SELECT NOW()');
+      const result = await this.pool.query('SELECT NOW() as current_time, version() as pg_version');
       console.log('✅ Database connection successful');
+      console.log('📊 PostgreSQL version:', result.rows[0].pg_version.split(' ')[0]);
       return true;
     } catch (error) {
       console.error('❌ Database connection failed:', error);
+      console.error('Connection details:', {
+        message: error.message,
+        code: error.code,
+        host: error.hostname || 'unknown'
+      });
       return false;
+    }
+  }
+
+  /**
+   * Get database info (useful for debugging)
+   * @returns {Object} - Database information
+   */
+  async getDatabaseInfo() {
+    try {
+      const queries = [
+        "SELECT current_database() as database_name",
+        "SELECT current_user as current_user",
+        "SELECT version() as version"
+      ];
+      
+      const results = await Promise.all(
+        queries.map(query => this.pool.query(query))
+      );
+      
+      return {
+        database: results[0].rows[0].database_name,
+        user: results[1].rows[0].current_user,
+        version: results[2].rows[0].version.split(' ')[0]
+      };
+    } catch (error) {
+      console.error('❌ Failed to get database info:', error);
+      return { error: error.message };
     }
   }
 
@@ -199,7 +247,12 @@ class DatabaseService {
    * Gracefully close database connections
    */
   async close() {
-    await this.pool.end();
+    try {
+      await this.pool.end();
+      console.log('🔌 Database connections closed');
+    } catch (error) {
+      console.error('❌ Error closing database connections:', error);
+    }
   }
 }
 
