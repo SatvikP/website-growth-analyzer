@@ -94,13 +94,16 @@ function App() {
       {/* Header */}
       <div className="text-center mb-4">
         <h1 style={{ color: 'white', marginBottom: '1rem' }}>
-          AI-Powered Website Growth Analysis
+          Rate My Website
         </h1>
         <p style={{ color: 'rgba(255, 255, 255, 0.9)', fontSize: '18px', maxWidth: '600px', margin: '0 auto 2rem' }}>
-          Get instant, professional feedback on your website's growth potential. No signup required - just enter your URL and get AI-powered insights.
+          Uncover Your Website's Potential. 
+        </p>
+        <p style={{ color: 'rgba(255, 255, 255, 0.9)', fontSize: '18px', maxWidth: '600px', margin: '0 auto 2rem' }}>
+          Enter your URL and get actionable insights.
         </p>
         
-        {/* Feature highlights */}
+        {/* Feature highlights 
         <div className="feature-list">
           <div className="feature-item">
             <span className="feature-icon">🤖</span>
@@ -115,19 +118,20 @@ function App() {
             Results in 60 seconds
           </div>
         </div>
+        </div>*/}
       </div>
 
       {/* Main Analysis Form */}
       {!analysisResult && (
         <div className="card">
           <div className="card-header">
-            <h2>AI-Powered Website Growth Analyzer</h2>
+            <h2>Rate My Website</h2>
             <p style={{ color: '#6b7280', marginBottom: 0 }}>
-              Get instant AI feedback on your onboarding, UX, and growth potential
+              Uncover Your Website's Potential
             </p>
-            <p style={{ color: '#9ca3af', fontSize: '14px', marginTop: '0.5rem' }}>
+            {/*<p style={{ color: '#9ca3af', fontSize: '14px', marginTop: '0.5rem' }}>
               🤖 Powered by Claude AI • No API keys required • Just enter your URL
-            </p>
+            </p>*/}
           </div>
 
           <form onSubmit={handleAnalyze}>
@@ -136,7 +140,7 @@ function App() {
                 type="url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://satvikputi.com/"
+                placeholder="https://acme.com/"
                 className={`form-input ${error ? 'error' : ''}`}
                 disabled={isAnalyzing}
                 autoFocus
@@ -159,13 +163,13 @@ function App() {
                 </>
               ) : (
                 <>
-                  ⚡ Analyze with AI
+                  ⚡ Analyze
                 </>
               )}
             </button>
           </form>
 
-          <p style={{ 
+          {/*<p style={{ 
             textAlign: 'center', 
             fontSize: '14px', 
             color: '#9ca3af', 
@@ -173,7 +177,7 @@ function App() {
             marginBottom: 0 
           }}>
             🌟 Professional Growth 101 analysis powered by AI
-          </p>
+          </p>*/}
         </div>
       )}
 
