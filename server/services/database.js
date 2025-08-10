@@ -36,14 +36,7 @@ class DatabaseService {
           recommendations JSONB,
           
           -- Website metadata
-          title VARCHAR(500),
-          description TEXT,
           content_length INTEGER,
-          
-          -- Lead tracking data (using VARCHAR for IP instead of INET for compatibility)
-          ip_address VARCHAR(45),
-          user_agent TEXT,
-          referrer VARCHAR(500),
           
           -- Timestamps
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -62,7 +62,7 @@ router.post('/', async (req, res) => {
         url: url,
         analysis: analysisResult,
         metadata: crawlData.metadata,
-        ip: req.ip || req.connection?.remoteAddress || 'unknown',
+        ip: req.ip || req.socket?.remoteAddress || 'unknown',
         userAgent: req.get('User-Agent') || 'unknown',
         referrer: req.get('Referer') || null
       };

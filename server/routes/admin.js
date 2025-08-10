@@ -49,7 +49,6 @@ router.get('/leads', requireAdmin, async (req, res) => {
         recentSubmissions: stats.recentSubmissions.map(submission => ({
           domain: submission.domain,
           score: submission.growth_score,
-          title: submission.title,
           analyzedAt: submission.created_at,
           scoreCategory: submission.growth_score >= 80 ? 'Excellent' :
                        submission.growth_score >= 65 ? 'Good' :
@@ -80,9 +79,7 @@ router.get('/leads/export', requireAdmin, async (req, res) => {
         domain,
         url,
         growth_score,
-        title,
         analysis_summary,
-        ip_address,
         created_at,
         analyzed_at
       FROM website_submissions 
@@ -93,15 +90,13 @@ router.get('/leads/export', requireAdmin, async (req, res) => {
     const submissions = result.rows;
     
     // Generate CSV
-    const csvHeader = 'Domain,URL,Score,Title,Summary,IP,Submitted,Analyzed\n';
+    const csvHeader = 'Domain,URL,Score,Summary,Submitted,Analyzed\n';
     const csvRows = submissions.map(row => {
       return [
         row.domain,
         row.url,
         row.growth_score,
-        `"${row.title?.replace(/"/g, '""') || ''}"`,
         `"${row.analysis_summary?.substring(0, 100)?.replace(/"/g, '""') || ''}"`,
-        row.ip_address,
         row.created_at?.toISOString(),
         row.analyzed_at?.toISOString()
       ].join(',');
