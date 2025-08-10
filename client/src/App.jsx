@@ -159,7 +159,7 @@ function App() {
               {isAnalyzing ? (
                 <>
                   <span className="spinner"></span>
-                  Analyzing with AI...
+                  Analyzing...
                 </>
               ) : (
                 <>
