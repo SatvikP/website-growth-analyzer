@@ -88,22 +88,17 @@ class DatabaseService {
       // Extract domain from URL for easier lead management
       const domain = this.extractDomain(submissionData.url);
       
-      const query = `
+      // First, try to insert the record
+      const insertQuery = `
         INSERT INTO website_submissions 
         (url, domain, growth_score, analysis_summary, analysis_categories, 
          recommendations, title, description, content_length, ip_address, 
-         user_agent, referrer, analyzed_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-        ON CONFLICT (url, DATE(CURRENT_TIMESTAMP))
-        DO UPDATE SET
-          growth_score = EXCLUDED.growth_score,
-          analysis_summary = EXCLUDED.analysis_summary,
-          analysis_categories = EXCLUDED.analysis_categories,
-          recommendations = EXCLUDED.recommendations,
-          analyzed_at = EXCLUDED.analyzed_at
+         user_agent, referrer, analyzed_at, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         RETURNING id, created_at, domain
       `;
       
+      const currentTime = new Date();
       const values = [
         submissionData.url,
         domain,
@@ -117,14 +112,60 @@ class DatabaseService {
         submissionData.ip,
         submissionData.userAgent,
         submissionData.referrer,
-        new Date()
+        currentTime,
+        currentTime
       ];
 
-      const result = await this.pool.query(query, values);
-      const savedRecord = result.rows[0];
-      
-      console.log(`💾 Saved lead: ${domain} (ID: ${savedRecord.id})`);
-      return savedRecord;
+      try {
+        const result = await this.pool.query(insertQuery, values);
+        const savedRecord = result.rows[0];
+        
+        console.log(`💾 Saved lead: ${domain} (ID: ${savedRecord.id})`);
+        return savedRecord;
+        
+      } catch (insertError) {
+        // If it's a unique constraint violation (duplicate URL same day), update instead
+        if (insertError.code === '23505') { // Unique violation
+          console.log(`🔄 URL already analyzed today, updating: ${domain}`);
+          
+          const updateQuery = `
+            UPDATE website_submissions 
+            SET 
+              growth_score = $2,
+              analysis_summary = $3,
+              analysis_categories = $4,
+              recommendations = $5,
+              title = $6,
+              description = $7,
+              content_length = $8,
+              analyzed_at = $9
+            WHERE url = $1 
+              AND DATE(created_at) = CURRENT_DATE
+            RETURNING id, created_at, domain
+          `;
+          
+          const updateValues = [
+            submissionData.url,
+            submissionData.analysis.score,
+            submissionData.analysis.summary || submissionData.analysis.feedback,
+            JSON.stringify(submissionData.analysis.categories || []),
+            JSON.stringify(submissionData.analysis.recommendations || []),
+            submissionData.metadata?.title || 'Unknown Title',
+            submissionData.metadata?.description || '',
+            submissionData.metadata?.contentLength || 0,
+            currentTime
+          ];
+          
+          const updateResult = await this.pool.query(updateQuery, updateValues);
+          const updatedRecord = updateResult.rows[0];
+          
+          console.log(`💾 Updated lead: ${domain} (ID: ${updatedRecord.id})`);
+          return updatedRecord;
+        } else {
+          // Re-throw if it's not a unique constraint violation
+          throw insertError;
+        }
+      }
       
     } catch (error) {
       console.error('❌ Failed to save submission:', error);
