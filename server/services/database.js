@@ -85,9 +85,8 @@ class DatabaseService {
       const insertQuery = `
         INSERT INTO website_submissions 
         (url, domain, growth_score, analysis_summary, analysis_categories, 
-         recommendations, title, description, content_length, ip_address, 
-         user_agent, referrer, analyzed_at, created_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+         recommendations, content_length, analyzed_at, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING id, created_at, domain
       `;
       
@@ -99,12 +98,7 @@ class DatabaseService {
         submissionData.analysis.summary || submissionData.analysis.feedback,
         JSON.stringify(submissionData.analysis.categories || []),
         JSON.stringify(submissionData.analysis.recommendations || []),
-        submissionData.metadata?.title || 'Unknown Title',
-        submissionData.metadata?.description || '',
         submissionData.metadata?.contentLength || 0,
-        submissionData.ip,
-        submissionData.userAgent,
-        submissionData.referrer,
         currentTime,
         currentTime
       ];
@@ -128,10 +122,8 @@ class DatabaseService {
               analysis_summary = $3,
               analysis_categories = $4,
               recommendations = $5,
-              title = $6,
-              description = $7,
-              content_length = $8,
-              analyzed_at = $9
+              content_length = $6,
+              analyzed_at = $7
             WHERE url = $1 
               AND DATE(created_at) = CURRENT_DATE
             RETURNING id, created_at, domain
@@ -143,8 +135,6 @@ class DatabaseService {
             submissionData.analysis.summary || submissionData.analysis.feedback,
             JSON.stringify(submissionData.analysis.categories || []),
             JSON.stringify(submissionData.analysis.recommendations || []),
-            submissionData.metadata?.title || 'Unknown Title',
-            submissionData.metadata?.description || '',
             submissionData.metadata?.contentLength || 0,
             currentTime
           ];
@@ -192,7 +182,7 @@ class DatabaseService {
       `;
       
       const recentDomainsQuery = `
-        SELECT domain, growth_score, title, created_at
+        SELECT domain, growth_score, created_at
         FROM website_submissions 
         ORDER BY created_at DESC 
         LIMIT 10
